@@ -5,6 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class PageWidget extends StatefulWidget {
   const PageWidget({Key key}) : super(key: key);
@@ -12,6 +13,8 @@ class PageWidget extends StatefulWidget {
   @override
   _PageWidgetState createState() => _PageWidgetState();
 }
+
+FirebaseDatabase database = FirebaseDatabase.instance;
 
 class _PageWidgetState extends State<PageWidget> with TickerProviderStateMixin {
   final animationsMap = {
@@ -31,7 +34,11 @@ class _PageWidgetState extends State<PageWidget> with TickerProviderStateMixin {
     ),
   };
   final scaffoldKey = GlobalKey<ScaffoldState>();
-
+  var temp_var = "";
+  var hum_var = "";
+  var moisture_var = "";
+  var wild_animal_var = "";
+  
   @override
   void initState() {
     super.initState();
@@ -40,6 +47,19 @@ class _PageWidgetState extends State<PageWidget> with TickerProviderStateMixin {
           .where((anim) => anim.trigger == AnimationTrigger.onPageLoad),
       this,
     );
+    DatabaseReference ref = FirebaseDatabase.instance.ref("LATEST_DATA");
+    // Get the Stream
+    Stream<DatabaseEvent> stream = ref.onValue;
+    // Subscribe to the stream!
+    stream.listen((DatabaseEvent event) {
+      print('Event Type: ${event.type}');
+      print('Snapshot: ${event.snapshot}');
+      temp_var = event.snapshot.child("LATEST_temperature").value.toString();
+      hum_var = event.snapshot.child("LATEST_humidity").value.toString();
+      moisture_var = event.snapshot.child("LATEST_moisture").value.toString();
+      wild_animal_var = event.snapshot.child("LATEST_motion_state").value.toString();
+      setState(() {});
+    });
   }
 
   @override
@@ -50,7 +70,7 @@ class _PageWidgetState extends State<PageWidget> with TickerProviderStateMixin {
         backgroundColor: Color(0xAF9FF09F),
         automaticallyImplyLeading: false,
         title: Text(
-          'Farm Monitering',
+          'Farm Monitoring',
           style: FlutterFlowTheme.of(context).bodyText1.override(
                 fontFamily: 'Roboto Slab',
                 fontSize: 24,
@@ -119,7 +139,7 @@ class _PageWidgetState extends State<PageWidget> with TickerProviderStateMixin {
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       0, 8, 0, 0),
                                   child: AutoSizeText(
-                                    'Temeprature',
+                                    'Temperature',
                                     textAlign: TextAlign.center,
                                     style: FlutterFlowTheme.of(context)
                                         .subtitle1
@@ -134,7 +154,7 @@ class _PageWidgetState extends State<PageWidget> with TickerProviderStateMixin {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         8, 4, 8, 0),
                                     child: Text(
-                                      '25 C',
+                                      temp_var+' C',
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.getFont(
                                         'Lexend Deca',
@@ -199,7 +219,7 @@ class _PageWidgetState extends State<PageWidget> with TickerProviderStateMixin {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         8, 4, 8, 0),
                                     child: Text(
-                                      '55 %',
+                                      hum_var+' %',
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.getFont(
                                         'Lexend Deca',
@@ -273,7 +293,7 @@ class _PageWidgetState extends State<PageWidget> with TickerProviderStateMixin {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         8, 4, 8, 0),
                                     child: Text(
-                                      '50 %',
+                                      moisture_var+' %',
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.getFont(
                                         'Lexend Deca',
@@ -338,7 +358,7 @@ class _PageWidgetState extends State<PageWidget> with TickerProviderStateMixin {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         8, 4, 8, 0),
                                     child: Text(
-                                      'Spotted',
+                                      wild_animal_var=="1"? 'Spotted':'Not spotted',
                                       textAlign: TextAlign.center,
                                       style: GoogleFonts.getFont(
                                         'Lexend Deca',
